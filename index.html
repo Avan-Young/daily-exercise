@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品筛选</title>
+    <link rel="stylesheet" href="./index.css">
+</head>
+
+<body>
+    <div id="app">
+        <div class="goods" v-for="(goods, goodsIndex) in goodsList" :key="goods.id">
+            <div class="title">{{goods.title}}：</div>
+            <ul class="type-list">
+                <li class="type" :class="{active: goods.selectedIndex === typeIndex}"
+                    v-for="(type, typeIndex) in goods.typeList"
+                    @click="addFilterType(typeIndex, goods, type, goodsIndex)">
+                    {{type}}
+                </li>
+            </ul>
+        </div>
+        <div class="choose-type">
+            <div>已选条件：</div>
+            <span class="no-goods" v-if="!showFilterGoods">暂时没有选择过滤条件</span>
+            <ul class="filter-list" v-else>
+                <li v-for="(filter, filterKey) in filterObj">
+                    {{ filter }}
+                    <span class="delete-goods" @click="deleteFilterType(filterKey)">x</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <script src="./vue.js"></script>
+    <script>
+        const vm = new Vue({
+            el: '#app',
+            data: {
+                goodsList: [{
+                        title: '上装',
+                        typeList: ['全部', '针织衫', '毛呢外套', 'T恤', '羽绒服', '棉衣', '卫衣', '风衣'],
+                        id: 1,
+                    },
+                    {
+                        title: '裤装',
+                        typeList: ['全部', '牛仔裤', '小脚/铅笔裤', '休闲裤', '打底裤', '哈伦裤'],
+                        id: 2,
+                    },
+                    {
+                        title: '裙装',
+                        typeList: ['全部', '连衣裙', '半身裙', '长袖连衣裙', '中长款连衣裙'],
+                        id: 3,
+                    }
+                ],
+                filterObj: {},
+                showFilterGoods: false
+            },
+            methods: {
+                addFilterType(tIndex, goods, type, gIndex) {
+                    if (type === "全部") {
+                        this.deleteFilterType(gIndex);
+                    } else {
+                        // 把选中的条件加入filterObj
+                        this.$set(this.filterObj, gIndex, type);
+                        // 更新对应goods类别的selectedIndex
+                        goods.selectedIndex = tIndex; // 在外面已经使用过$set把selectedIndex加到对象中了，这里可以不使用$set了
+                        this.changeShowFilter();
+                    }
+                },
+                deleteFilterType(gIndex) {
+                    this.$delete(this.filterObj, gIndex);
+                    // 恢复对应goods类别的selectedIndex为'0'，即条件为全部的索引
+                    this.$set(this.goodsList[gIndex], "selectedIndex", 0);
+                    this.changeShowFilter();
+                },
+                changeShowFilter(){
+                    this.showFilterGoods = JSON.stringify(this.filterObj) !== '{}';
+                }
+            }
+        });
+
+        vm.goodsList.forEach(goods => {
+            vm.$set(goods, 'selectedIndex', 0);
+        });
+    </script>
+</body>
+
+</html>
