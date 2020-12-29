@@ -4,31 +4,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>商品筛选</title>
+    <title>简单调查问卷</title>
     <link rel="stylesheet" href="./index.css">
 </head>
 
 <body>
     <div id="app">
-        <div class="goods" v-for="(goods, goodsIndex) in goodsList" :key="goods.id">
-            <div class="title">{{goods.title}}：</div>
-            <ul class="type-list">
-                <li class="type" :class="{active: goods.selectedIndex === typeIndex}"
-                    v-for="(type, typeIndex) in goods.typeList"
-                    @click="addFilterType(typeIndex, goods, type, goodsIndex)">
-                    {{type}}
-                </li>
-            </ul>
-        </div>
-        <div class="choose-type">
-            <div>已选条件：</div>
-            <span class="no-goods" v-if="!showFilterGoods">暂时没有选择过滤条件</span>
-            <ul class="filter-list" v-else>
-                <li v-for="(filter, filterKey) in filterObj">
-                    {{ filter }}
-                    <span class="delete-goods" @click="deleteFilterType(filterKey)">x</span>
-                </li>
-            </ul>
+        <div class="area" v-for="area of 2">
+            <template v-if="area === 1">
+                <h2>提问区</h2>
+                <ul>
+                    <li v-for="question in questionList" :key="question.id">
+                        <h3>{{question.title}}</h3>
+                        <!-- 简单 -->
+                        <div v-if="question.type === 'short'">
+                            <input type="text" v-model="question.answer">
+                        </div>
+                        <!-- 单选 -->
+                        <div v-else-if="question.type === 'single'">
+                            <div v-for="choose in question.chooseList">
+                                <input type="radio" :value="choose" v-model="question.answer">
+                                <span>{{choose}}</span>
+                            </div>
+                        </div>
+                        <!-- 多选 -->
+                        <div v-else-if="question.type === 'multiple'">
+                            <div v-for="choose in question.chooseList">
+                                <input type="checkbox" :value="choose" v-model="question.answer">
+                                <span>{{choose}}</span>
+                            </div>
+                        </div>
+                        <!-- 问答 -->
+                        <div v-else>
+                            <textarea v-model="question.answer"></textarea>
+                        </div>
+                    </li>
+                </ul>
+            </template>
+            <template v-else>
+                <h2>回答展示区</h2>
+                <ul>
+                    <li v-for="question in questionList" :key="question.id">
+                        <h3>{{question.title}}</h3>
+                        <!-- 无论是字符串还是数组，都用toString方法 -->
+                        <span>{{question.answer && question.answer.toString() }}</span>
+                        <!-- v-if="question.type === 'multiple'" -->
+                        <!-- <span v-else>{{question.answer}}</span> -->
+                    </li>
+                </ul>
+            </template>
         </div>
     </div>
     <script src="./vue.js"></script>
@@ -36,51 +60,51 @@
         const vm = new Vue({
             el: '#app',
             data: {
-                goodsList: [{
-                        title: '上装',
-                        typeList: ['全部', '针织衫', '毛呢外套', 'T恤', '羽绒服', '棉衣', '卫衣', '风衣'],
+                questionList: [{
+                        type: 'short',
+                        title: '1.请问你的姓名是？',
+                        chooseList: null,
+                        answer: '',
+                        id: 0
+                    },
+                    {
+                        type: 'single',
+                        title: '2.请问您的性别是？',
+                        chooseList: [
+                            '男',
+                            '女',
+                            '保密',
+                        ],
+                        answer: '',
                         id: 1,
                     },
                     {
-                        title: '裤装',
-                        typeList: ['全部', '牛仔裤', '小脚/铅笔裤', '休闲裤', '打底裤', '哈伦裤'],
+                        type: 'multiple',
+                        title: '3. 请选择您的兴趣爱好：',
+                        chooseList: [
+                            '看书',
+                            '游泳',
+                            '跑步',
+                            '看电影',
+                            '听音乐',
+                        ],
+                        answer: [],
                         id: 2,
                     },
                     {
-                        title: '裙装',
-                        typeList: ['全部', '连衣裙', '半身裙', '长袖连衣裙', '中长款连衣裙'],
+                        type: 'long',
+                        title: '4. 请介绍一下自己:',
+                        chooseList: null,
+                        answer: '',
                         id: 3,
-                    }
-                ],
-                filterObj: {},
-                showFilterGoods: false
-            },
-            methods: {
-                addFilterType(tIndex, goods, type, gIndex) {
-                    if (type === "全部") {
-                        this.deleteFilterType(gIndex);
-                    } else {
-                        // 把选中的条件加入filterObj
-                        this.$set(this.filterObj, gIndex, type);
-                        // 更新对应goods类别的selectedIndex
-                        goods.selectedIndex = tIndex; // 在外面已经使用过$set把selectedIndex加到对象中了，这里可以不使用$set了
-                        this.changeShowFilter();
-                    }
-                },
-                deleteFilterType(gIndex) {
-                    this.$delete(this.filterObj, gIndex);
-                    // 恢复对应goods类别的selectedIndex为'0'，即条件为全部的索引
-                    this.$set(this.goodsList[gIndex], "selectedIndex", 0);
-                    this.changeShowFilter();
-                },
-                changeShowFilter(){
-                    this.showFilterGoods = JSON.stringify(this.filterObj) !== '{}';
-                }
+                    },
+                ]
             }
         });
 
-        vm.goodsList.forEach(goods => {
-            vm.$set(goods, 'selectedIndex', 0);
+        vm.questionList.forEach(question => {
+            const answer = question.type === 'multiple' ? [] : '';
+            vm.$set(question, 'answer', answer);
         });
     </script>
 </body>
