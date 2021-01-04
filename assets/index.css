@@ -1,0 +1,36 @@
+.clearfix::after {
+  clear: both;
+  display: block;
+  content: "";
+}
+
+.header {
+  padding: 10px 3.2vw 15px 4.8vw;
+}
+
+.header .logo {
+  float: left;
+}
+
+.header .right {
+  float: right;
+  display: flex;
+  align-items: center;
+}
+
+.header .right .search,
+.header .right .avatar {
+  margin-right: 5vw;
+}
+
+.header .right .avatar svg {
+  border-radius: 50%;
+}
+
+.header .right .btn-download {
+  background-color: #fb7299;
+  color: #fff;
+  padding: 5px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
