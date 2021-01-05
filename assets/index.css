@@ -97,9 +97,7 @@
 	z-index: 2;
 }
 
-.hide-nav-box .nav-list {
-	/* display: none; */
-}
+/* .hide-nav-box .nav-list {} */
 
 .hide-nav-box .nav-list .nav {
 	display: inline-block;
@@ -132,4 +130,58 @@
 
 .hide-nav-box.hide {
 	top: -120px;
+}
+
+/* banner区域 */
+.banner-box {
+	position: relative;
+	top: 90px;
+	width: 90vw;
+	height: 110px;
+	margin: 0 5vw;
+	overflow: hidden;
+	border-radius: 6px;
+}
+
+.banner-box .banner-list {
+	/* width: calc(90vw * 4); */
+	position: absolute;
+	/* transition: left .3s; */
+}
+
+.banner-box .banner-list .banner {
+	float: left;
+	width: 90vw;
+
+}
+
+.banner-box .banner-list .banner img {
+	width: 100%;
+	height: 110px;
+}
+
+.banner-box .dot-list {
+	background-color: rgba(0, 0, 0, .5);
+	position: absolute;
+	bottom: 5px;
+	display: flex;
+	align-items: center;
+	padding-left: 3px;
+	padding-right: 3px;
+	height: 10px;
+	border-radius: 5px;
+	left: 50%;
+	transform: translateX(-50%);
+}
+
+.banner-box .dot-list .dot {
+	background-color: #fff;
+	width: 5px;
+	height: 5px;
+	border-radius: 50%;
+	margin: 0 3px;
+}
+
+.banner-box .dot-list .dot.active {
+	background-color: #fb7299;
 }

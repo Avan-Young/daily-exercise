@@ -93,7 +93,7 @@
                 <div class="btn-download">下载App</div>
             </div>
         </div>
-        <!-- 导航 -->
+        <!-- nav导航区域 -->
         <div :class="{
                 'nav-box': navIndex === 1 ,
                 'hide-nav-box': navIndex === 2,
@@ -118,6 +118,21 @@
                 </svg>
             </div>
         </div>
+        <!-- banner轮播图区域 -->
+        <div class="banner-box">
+            <ul class="banner-list clearfix" :style="bannerStyle" @transitionend="bannerTransitionEnd">
+                <li class="banner" v-for="(banner,index) in bannerList" :key="banner.id"
+                    :class="{active: index===bannerActiveIndex}">
+                    <img :src="banner.poster" :alt="banner.title">
+                </li>
+            </ul>
+            <ul class="dot-list">
+                <li class="dot" v-for="index in dotlist" :key="index" :class="{
+                    active: index-1 === bannerActiveIndex % dotlist
+                  }"></li>
+
+            </ul>
+        </div>
     </div>
     <script src="./vue.js"></script>
     <script src="./axios.js"></script>
@@ -129,13 +144,48 @@
                 navList: [], // 导航列表
                 navActive: "", // 当前点击导航
                 navHide: true, // 是否显示下拉的nav
+                bannerList: [], // 轮播图列表
+                bannerActiveIndex: 0, // 当前轮播图索引
+                bannerStyle: {
+                    width: '90vw',
+                    left: 0,
+                    transition: 'left .3s',
+                }
+            },
+            computed: {
+                dotlist() {
+                    let len = this.bannerList.length - 1;
+                    return len > 0 ? len : 0;
+                },
             },
             methods: {
-                handleNavClick(id){
+                handleNavClick(id) {
+                    // 切换导航时有个优化的地方，即切换后，应该定位到点击后的导航
+                    // TO-DO
                     this.navActive = id;
-                    if(!this.navHide){
+                    if (!this.navHide) {
                         this.navHide = true;
                     }
+                },
+                autoMove() {
+                    // 这里轮播图只实现一个简单的轮播效果，没有点击点点切换和滑动切换等效果
+                    // TO-DO
+                    setTimeout(() => {
+                        if (this.bannerActiveIndex === 0) {
+                            this.bannerStyle.transition = 'left .3s';
+                        }
+                        this.bannerActiveIndex++;
+                        this.bannerStyle.left = -this.bannerActiveIndex * 90 + 'vw';
+                    }, 1500)
+                },
+                bannerTransitionEnd() {
+                    // 直接使用setInterval实现会有点bug，必须得使用transitionend事件来复位以下几个属性，有机会再研究
+                    if (this.bannerActiveIndex === this.dotlist) {
+                        this.bannerStyle.transition = 'none';
+                        this.bannerActiveIndex = 0;
+                        this.bannerStyle.left = 0;
+                    }
+                    this.autoMove();
                 }
             },
             created() {
@@ -145,6 +195,21 @@
                         this.navActive = this.navList.length > 0 ? this.navList[0].id : "";
                     }
                 });
+                axios.get("/banner").then(res => {
+                    if (res.status == 200) {
+                        // 轮播图无缝链接老套路，在末尾追加第一张
+                        const lastBanner = {
+                            ...res.data.data[0]
+                        }
+                        lastBanner.id += "x"; // 与原有的id区分
+                        this.bannerList = [...res.data.data, lastBanner];
+                        this.bannerStyle.width = 90 * this.bannerList.length + 'vw';
+                    }
+                });
+            },
+            mounted() {
+                // 当数据都加载完毕后，让banner开始自动轮播
+                this.autoMove();
             }
         });
     </script>
