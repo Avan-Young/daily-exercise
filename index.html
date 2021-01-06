@@ -10,7 +10,7 @@
 </head>
 
 <body>
-    <div id="app">
+    <div id="app" @scroll="handleScroll">
         <!-- logo、搜索栏头部区域 -->
         <div class="header clearfix">
             <div class="logo">
@@ -127,17 +127,54 @@
                 </li>
             </ul>
             <ul class="dot-list">
-                <li class="dot" v-for="index in dotlist" :key="index" :class="{
-                    active: index-1 === bannerActiveIndex % dotlist
+                <li class="dot" v-for="index in dotList" :key="index" :class="{
+                    active: index-1 === bannerActiveIndex % dotList
                   }"></li>
 
             </ul>
         </div>
+        <!-- video区域 -->
+        <div class="video-box">
+            <ul class="video-list" v-if="videoShowList.length">
+                <li class="video" v-for="video in videoShowList" :key="video.id">
+                    <div class="poster">
+                        <img :src="video.poster" :alt="video.title">
+                        <div class="info">
+                            <div class="play">
+                                <svg viewBox="0 0 1024 1024">
+                                    <path
+                                        d="M800 128H224C134.4 128 64 198.4 64 288v448c0 89.6 70.4 160 160 160h576c89.6 0 160-70.4 160-160V288c0-89.6-70.4-160-160-160z m96 608c0 54.4-41.6 96-96 96H224c-54.4 0-96-41.6-96-96V288c0-54.4 41.6-96 96-96h576c54.4 0 96 41.6 96 96v448z">
+                                    </path>
+                                    <path
+                                        d="M684.8 483.2l-256-112c-22.4-9.6-44.8 6.4-44.8 28.8v224c0 22.4 22.4 38.4 44.8 28.8l256-112c25.6-9.6 25.6-48 0-57.6z">
+                                    </path>
+                                </svg>
+                                {{video.play}}</div>
+                            <div class="rank" v-if="video.rank"> <svg viewBox="0 0 1024 1024">
+                                    <path
+                                        d="M800 128H224C134.4 128 64 198.4 64 288v448c0 89.6 70.4 160 160 160h576c89.6 0 160-70.4 160-160V288c0-89.6-70.4-160-160-160z m96 608c0 54.4-41.6 96-96 96H224c-54.4 0-96-41.6-96-96V288c0-54.4 41.6-96 96-96h576c54.4 0 96 41.6 96 96v448z">
+                                    </path>
+                                    <path
+                                        d="M240 384h64v64h-64zM368 384h384v64h-384zM432 576h352v64h-352zM304 576h64v64h-64z">
+                                    </path>
+                                </svg>
+                                {{video.rank}}</div>
+                        </div>
+                    </div>
+                    <div class="title">{{video.title}}</div>
+                </li>
+            </ul>
+        </div>
+        <!-- footer区域 -->
+        <div class="footer">
+            <p>哔哩哔哩 沪ICP备13002172号-3</p>
+            <p>信息网络传播视听节目许可证：0910417</p>
+        </div>
     </div>
     <script src="./vue.js"></script>
     <script src="./axios.js"></script>
+    <script src="./request.js"></script>
     <script>
-        axios.defaults.baseURL = "https://developer.duyiedu.com/vue/bz";
         const vm = new Vue({
             el: '#app',
             data: {
@@ -147,18 +184,35 @@
                 bannerList: [], // 轮播图列表
                 bannerActiveIndex: 0, // 当前轮播图索引
                 bannerStyle: {
-                    width: '90vw',
+                    width: '96vw',
                     left: 0,
                     transition: 'left .3s',
-                }
+                },
+                videoList: [], // 视频列表
+                lastPage: false, // 是否最后一页
+                videoQuery: { // 获取视频列表的请求参数
+                    start: 0,
+                    offset: 10
+                },
+                videoDataGetting: false, // 节流处理，是否正在请求数据
             },
             computed: {
-                dotlist() {
+                dotList() {
                     let len = this.bannerList.length - 1;
                     return len > 0 ? len : 0;
                 },
+                videoShowList() {
+                    // 用于渲染的视频列表
+                    // 处理播放量、评论过万显示
+                    return this.videoList.map(video => {
+                        video.play = video.play > 10000 ? video.play / 10000 + '万' : video.play;
+                        video.rank = video.rank > 10000 ? video.rank / 10000 + '万' : video.rank;
+                        return video;
+                    });
+                }
             },
             methods: {
+                // 点击导航
                 handleNavClick(id) {
                     // 切换导航时有个优化的地方，即切换后，应该定位到点击后的导航
                     // TO-DO
@@ -167,6 +221,7 @@
                         this.navHide = true;
                     }
                 },
+                // 自动轮播
                 autoMove() {
                     // 这里轮播图只实现一个简单的轮播效果，没有点击点点切换和滑动切换等效果
                     // TO-DO
@@ -175,37 +230,89 @@
                             this.bannerStyle.transition = 'left .3s';
                         }
                         this.bannerActiveIndex++;
-                        this.bannerStyle.left = -this.bannerActiveIndex * 90 + 'vw';
+                        this.bannerStyle.left = -this.bannerActiveIndex * 96 + 'vw';
                     }, 1500)
                 },
+                // 轮播动画处理
                 bannerTransitionEnd() {
                     // 直接使用setInterval实现会有点bug，必须得使用transitionend事件来复位以下几个属性，有机会再研究
-                    if (this.bannerActiveIndex === this.dotlist) {
+                    if (this.bannerActiveIndex === this.dotList) {
                         this.bannerStyle.transition = 'none';
                         this.bannerActiveIndex = 0;
                         this.bannerStyle.left = 0;
                     }
                     this.autoMove();
-                }
+                },
+                // 分页请求
+                getVideoList(start, offset) {
+                    if (this.lastPage) return;
+                    axios.get('/video', {
+                        params: {
+                            start,
+                            offset
+                        }
+                    }).then(res => {
+                        this.initVideo(res);
+                    });
+                },
+                // 监听滚动事件
+                handleScroll(e) {
+                    if (this.lastPage || this.videoDataGetting) return; // 没有数据了，请求个毛线
+                    const {
+                        scrollHeight, // 元素内容高度
+                        offsetHeight, // 元素高度（包含border）
+                        scrollTop // 元素滚动的纵向距离/坐标
+                    } = e.target;
+                    // console.log(scrollHeight, offsetHeight, scrollTop);
+                    // 剩余的高度 = 元素内容高度-元素高度-滚动的距离
+                    const toBottomHeight = scrollHeight - offsetHeight - scrollTop;
+                    // 当剩余的高度小于200时去请求视频数据列表
+                    if (toBottomHeight < 200) {
+                        this.videoDataGetting = true;
+                        this.getVideoList(this.videoList.length, 10)
+                    }
+                },
+                // 获取数据
+                getData() {
+                    axios.all([
+                        axios.get("/nav"),
+                        axios.get("/banner"),
+                        axios.get("video", {
+                            params: this.videoQuery
+                        })
+                    ]).then(axios.spread((resNav, resBanner, resVideo) => {
+                        this.initNavList(resNav);
+                        this.initBannerList(resBanner);
+                        this.initVideo(resVideo);
+                    }));
+                },
+                // 初始化nav
+                initNavList(resNav) {
+                    this.navList = resNav.data;
+                    this.navActive = this.navList.length > 0 ? this.navList[0].id : "";
+                },
+                // 初始化banner
+                initBannerList(resBanner) {
+                    // 轮播图无缝链接老套路，在末尾追加第一张
+                    const lastBanner = {
+                        ...resBanner.data[0]
+                    }
+                    lastBanner.id += "x"; // 与原有的id区分
+                    this.bannerList = [...resBanner.data, lastBanner];
+                    this.bannerStyle.width = 96 * this.bannerList.length + 'vw';
+                },
+                // 初始化video
+                initVideo(resVideo) {
+                    this.videoDataGetting = false; // 处理节流
+                    this.videoList.push(...resVideo.data);
+                    if (this.videoList.length >= resVideo.count) {
+                        this.lastPage = true;
+                    }
+                },
             },
             created() {
-                axios.get("/nav").then(res => {
-                    if (res.status === 200) {
-                        this.navList = res.data.data;
-                        this.navActive = this.navList.length > 0 ? this.navList[0].id : "";
-                    }
-                });
-                axios.get("/banner").then(res => {
-                    if (res.status == 200) {
-                        // 轮播图无缝链接老套路，在末尾追加第一张
-                        const lastBanner = {
-                            ...res.data.data[0]
-                        }
-                        lastBanner.id += "x"; // 与原有的id区分
-                        this.bannerList = [...res.data.data, lastBanner];
-                        this.bannerStyle.width = 90 * this.bannerList.length + 'vw';
-                    }
-                });
+                // 获取数据
+                this.getData();
             },
             mounted() {
                 // 当数据都加载完毕后，让banner开始自动轮播

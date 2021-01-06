@@ -4,6 +4,12 @@
 	content: "";
 }
 
+#app {
+	height: 100vh;
+	width: 100vw;
+	overflow-y: scroll;
+}
+
 /* header区域 */
 .header {
 	padding: 10px 3.2vw 15px 4.8vw;
@@ -136,22 +142,20 @@
 .banner-box {
 	position: relative;
 	top: 90px;
-	width: 90vw;
+	width: 96vw;
 	height: 110px;
-	margin: 0 5vw;
+	margin: 0 2vw;
 	overflow: hidden;
 	border-radius: 6px;
 }
 
 .banner-box .banner-list {
-	/* width: calc(90vw * 4); */
 	position: absolute;
-	/* transition: left .3s; */
 }
 
 .banner-box .banner-list .banner {
 	float: left;
-	width: 90vw;
+	width: 96vw;
 
 }
 
@@ -184,4 +188,82 @@
 
 .banner-box .dot-list .dot.active {
 	background-color: #fb7299;
+}
+
+/* video列表区域 */
+.video-box {
+	width: 96vw;
+	margin: 0 2vw;
+	padding-top: 100px;
+}
+
+.video-box .video-list {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+}
+
+.video-box .video-list .video {
+	width: 47vw;
+}
+
+.video-box .poster {
+	position: relative;
+	border-radius: 6px;
+	overflow: hidden;
+	height: 106px;
+}
+
+.video-box .poster img {
+	width: 100%;
+	height: 100%;
+}
+
+.video-box .poster .info {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 20px;
+	font-size: 12px;
+	color: #fff;
+	background-image: linear-gradient(rgba(33, 33, 33, 0), rgba(33, 33, 33, .5));
+	padding-top: 7px;
+	padding-bottom: 3px;
+	padding-left: 10px;
+}
+
+.video-box .info svg {
+	width: 14px;
+	height: 14px;
+	fill: #fff;
+}
+
+.video-box .poster .info>div {
+	display: inline-flex;
+	align-items: center;
+	margin-right: 10px;
+}
+
+.video-box .title {
+	display: -webkit-box; /* 将对象作为弹性伸缩盒子模型显示 */
+    -webkit-line-clamp: 2; /* 把块容器内容限制为指定的行数 */
+	-webkit-box-orient: vertical; /* 设置盒子垂直布局其内容 */
+	font-size: 13px;
+    margin: 6px 6px 10px 6px;
+    height: 36px;
+    line-height: 1.3;
+    overflow: hidden;
+}
+
+/* footer区域 */
+.footer {
+	margin-top: 40px;
+}
+
+.footer p {
+	color: #999;
+	margin-bottom: 20px;
+	font-size: 13px;
+	text-align: center;
 }
